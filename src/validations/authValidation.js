@@ -16,7 +16,13 @@ const validateLogin = () => [
     body('password').notEmpty().withMessage('Password is required!')
 ]
 
+const validateUpdatePassword = () => [
+    body('oldPassword').notEmpty().withMessage('Old password is required!'),
+    body('password').notEmpty().withMessage('Password is required!')
+]
+
 module.exports = {
     validateRegister,
     validateLogin,
+    validateUpdatePassword,
 }

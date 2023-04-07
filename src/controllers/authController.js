@@ -1,7 +1,8 @@
 import User from "../models/user";
-import registerService from "../services/registerService";
+import hashPasswordService from "../services/hashPasswordService";
 import loginService from "../services/loginService";
 import handleJwt from "../utils/handleJwt";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const register = async (req, res) => {
@@ -17,7 +18,7 @@ const register = async (req, res) => {
                     msg: 'Phone number already in use!'
                 });
             } else {
-                const hashPassword = await registerService.hashPassword(req.body.password)
+                const hashPassword = await hashPasswordService.hashPassword(req.body.password)
                 await User.create({
                     email: req.body.email,
                     firstName: req.body.firstName,
@@ -161,6 +162,29 @@ const getAllUser = async (req, res) => {
     }
 }
 
+const updatePassword = async (req, res) => {
+    try {
+        const oldPassword = req.body.oldPassword
+        const user = await User.findById(req.user.id)
+        const comparePassword = await bcrypt.compare(oldPassword, user.password)
+        if (!comparePassword) {
+            return res.status(400).json({
+                msg: "Wrong password!"
+            })
+        } else {
+            const hashPassword = await hashPasswordService.hashPassword(req.body.password)
+            await user.updateOne({ password: hashPassword })
+            return res.status(200).json({
+                msg: "Update password success!"
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
 module.exports = {
     register,
     login,
@@ -168,4 +192,5 @@ module.exports = {
     getAllUser,
     refreshToken,
     logout,
+    updatePassword,
 }
