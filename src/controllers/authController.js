@@ -1,7 +1,8 @@
 import User from "../models/user";
 import registerService from "../services/registerService";
 import loginService from "../services/loginService";
-import jwt from "../utils/jwt"
+import handleJwt from "../utils/handleJwt";
+import jwt from "jsonwebtoken";
 
 const register = async (req, res) => {
     try {
@@ -50,8 +51,8 @@ const login = async (req, res) => {
                 msg: 'These credentials do not match our records!'
             })
         } else {
-            const accessToken = jwt.generateAccessToken(user.id, user.role)
-            const refreshToken = jwt.generateRefreshToken(user.id, user.role)
+            const accessToken = handleJwt.generateAccessToken(user.id, user.role)
+            const refreshToken = handleJwt.generateRefreshToken(user.id, user.role)
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000
@@ -69,7 +70,7 @@ const login = async (req, res) => {
     }
 }
 
-const authCheck = async(req, res) => {
+const authCheck = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
         if (!user) {
@@ -89,8 +90,37 @@ const authCheck = async(req, res) => {
     }
 }
 
+const refreshToken = async (req, res) => {
+    try {
+        const cookie = req.cookies
+        if (!cookie.refreshToken) {
+            return res.status(400).json({
+                msg: 'Do not have refresh token in cookie!'
+            })
+        } else {
+            await jwt.verify(cookie.refreshToken, process.env.REFRESH_TOKEN, (err, decode) => {
+                if (err) {
+                    return res.status(400).json({
+                        msg: 'Invalid refresh token!'
+                    })
+                } else {
+                    const newAccessToken = handleJwt.generateAccessToken(decode.id, decode.role)
+                    return res.status(200).json({
+                        accessToken: newAccessToken
+                    })
+                }
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
 module.exports = {
     register,
     login,
     authCheck,
+    refreshToken,
 }

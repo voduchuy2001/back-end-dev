@@ -1,6 +1,7 @@
 import express from 'express';
 import initAPIRoutes from './routes/api';
 import bodyParser from 'body-parser';
+import cookieParser from 'cookie-parser';
 import cors from "cors";
 import database from "../src/config/database";
 
@@ -9,6 +10,7 @@ const app = express();
 database();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
 app.use(cors())
 
 const port = process.env.PORT || 6969;
