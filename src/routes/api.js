@@ -15,8 +15,11 @@ const initAPIRoutes = (app) => {
     router.post('/refresh-token', authController.refreshToken);
     router.post('/logout', authController.logout)
     router.post('/update-password', authValidation.validateUpdatePassword(), validation, [verifyToken], authController.updatePassword)
-    router.post('/block-user/:id', [verifyToken, admin], authController.blockUser);
-    router.post('/un-block-user/:id', [verifyToken, admin], authController.unBlockUser);
+    router.put('/block-user/:id', [verifyToken, admin], authController.blockUser);
+    router.put('/un-block-user/:id', [verifyToken, admin], authController.unBlockUser);
+    router.post('/forgot-password', authValidation.validateForgotPassword(), validation, authController.forgotPassword)
+    router.put('/reset-password/:token', authValidation.validateResetPassword(), validation, authController.resetPassword)
+
 
     return app.use('/api/v1', router);
 };

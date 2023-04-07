@@ -39,7 +39,23 @@ const admin = (req, res, next) => {
     }
 }
 
+const isBlocked = (req, res, next) => {
+    try {
+        const { isBlocked } = req.user
+        if (isBlocked !== false) {
+            return res.status(401).json({
+                msg: 'Access denied, your account has been blocked!'
+            })
+        } else {
+            next()
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     verifyToken,
-    admin
+    admin,
+    isBlocked,
 }

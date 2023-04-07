@@ -21,8 +21,20 @@ const validateUpdatePassword = () => [
     body('password').notEmpty().withMessage('Password is required!')
 ]
 
+const validateForgotPassword = () => [
+    body('email').notEmpty().withMessage('Email is required!')
+        .isEmail().withMessage('Email format wrong!'),
+]
+
+const validateResetPassword = () => [
+    body('password').notEmpty().withMessage('Password is required!')
+        .isLength({ min: 6 }).withMessage('Password min 6 characters'),
+]
+
 module.exports = {
     validateRegister,
     validateLogin,
     validateUpdatePassword,
+    validateForgotPassword,
+    validateResetPassword,
 }

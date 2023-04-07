@@ -17,6 +17,7 @@ const handleLogin = (email, password) => {
                         id: user.id,
                         email: user.email,
                         role: user.role,
+                        isBlocked: user.isBlocked,
                     }
                     resolve(data)
                 }

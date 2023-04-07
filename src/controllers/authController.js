@@ -2,7 +2,9 @@ import User from "../models/user";
 import hashPasswordService from "../services/hashPasswordService";
 import loginService from "../services/loginService";
 import handleJwt from "../utils/handleJwt";
+import handleMail from "../utils/handleMail"
 import bcrypt from "bcrypt";
+const crypto = require('crypto')
 import jwt from "jsonwebtoken";
 
 const register = async (req, res) => {
@@ -52,8 +54,8 @@ const login = async (req, res) => {
                 msg: 'These credentials do not match our records!'
             })
         } else {
-            const accessToken = handleJwt.generateAccessToken(user.id, user.role)
-            const refreshToken = handleJwt.generateRefreshToken(user.id, user.role)
+            const accessToken = handleJwt.generateAccessToken(user.id, user.role, user.isBlocked)
+            const refreshToken = handleJwt.generateRefreshToken(user.id, user.role, user.isBlocked)
             res.cookie('refreshToken', refreshToken, {
                 httpOnly: true,
                 maxAge: 7 * 24 * 60 * 60 * 1000
@@ -105,7 +107,7 @@ const refreshToken = async (req, res) => {
                         msg: 'Invalid refresh token!'
                     })
                 } else {
-                    const newAccessToken = handleJwt.generateAccessToken(decode.id, decode.role)
+                    const newAccessToken = handleJwt.generateAccessToken(decode.id, decode.role, decode.isBlocked)
                     return res.status(200).json({
                         accessToken: newAccessToken
                     })
@@ -175,7 +177,7 @@ const updatePassword = async (req, res) => {
             const hashPassword = await hashPasswordService.hashPassword(req.body.password)
             await user.updateOne({ password: hashPassword })
             return res.status(200).json({
-                msg: "Update password success!"
+                msg: "Updated password!"
             })
         }
     } catch (error) {
@@ -227,6 +229,71 @@ const unBlockUser = async (req, res) => {
     }
 }
 
+const forgotPassword = async (req, res) => {
+    try {
+        const user = await User.findOne({ email: req.body.email })
+
+        if (!user) {
+            return res.status(400).json({
+                msg: 'These credentials do not match our records!'
+            })
+        } else {
+            const resetToken = crypto.randomBytes(32).toString('hex')
+            await user.updateOne({
+                passwordResetToken: crypto.createHash('sha256').update(resetToken).digest('hex'),
+                passwordResetExpired: Date.now() + 15 * 60 * 1000
+            });
+            const emailTemplate = `You are receiving this email because we received a password reset request for your account.This password reset link will expire in 15 minutes. 
+            <a href=${process.env.URL_SERVER}/api/reset-password/${resetToken}>Click here</a>`
+
+            const data = {
+                email: user.email,
+                html: emailTemplate,
+            }
+
+            const sendingMail = await handleMail(data);
+            if (!sendingMail) {
+                return res.status(400).json({
+                    msg: 'Mailing fail!'
+                })
+            } else {
+                console.log(sendingMail)
+                return res.status(200).json({
+                    msg: 'A confirmation email has been sent to your email!'
+                })
+            }
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
+const resetPassword = async (req, res) => {
+    const { password } = req.body;
+    const { token } = req.params;
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpired: { $gt: Date.now() },
+    });
+    if (!user) {
+        return res.status(400).json({
+            msg: "Token Expired, Please try again later!"
+        })
+    } else {
+        const hashPassword = await hashPasswordService.hashPassword(password)
+        user.password = hashPassword
+        user.passwordResetToken = null;
+        user.passwordResetExpired = null;
+        await user.save();
+        return res.status(200).json({
+            msg: "Updated password"
+        });
+    }
+}
+
 module.exports = {
     register,
     login,
@@ -237,4 +304,6 @@ module.exports = {
     updatePassword,
     blockUser,
     unBlockUser,
+    forgotPassword,
+    resetPassword,
 }
