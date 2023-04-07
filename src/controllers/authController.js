@@ -185,6 +185,48 @@ const updatePassword = async (req, res) => {
     }
 }
 
+const blockUser = async (req, res) => {
+    try {
+        const id = req.params.id
+        const user = await User.findOne({ _id: id })
+        if (!user) {
+            return res.status(400).json({
+                msg: "Not found user!"
+            })
+        } else {
+            await user.updateOne({ isBlocked: true })
+            return res.status(200).json({
+                msg: "Blocked!"
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
+const unBlockUser = async (req, res) => {
+    try {
+        const id = req.params.id
+        const user = await User.findOne({ _id: id })
+        if (!user) {
+            return res.status(400).json({
+                msg: "Not found user!"
+            })
+        } else {
+            await user.updateOne({ isBlocked: false })
+            return res.status(200).json({
+                msg: "Un blocked!"
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
 module.exports = {
     register,
     login,
@@ -193,4 +235,6 @@ module.exports = {
     refreshToken,
     logout,
     updatePassword,
+    blockUser,
+    unBlockUser,
 }
