@@ -118,9 +118,33 @@ const refreshToken = async (req, res) => {
     }
 }
 
+const logout = async (req, res) => {
+    try {
+        const cookie = req.cookies
+        if (!cookie.refreshToken) {
+            return res.status(400).json({
+                msg: 'Do not have refresh token in cookie!'
+            })
+        } else {
+            res.clearCookie('refreshToken', {
+                httpOnly: true,
+                secure: true
+            })
+            return res.status(200).json({
+                msg: 'User is logout'
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
 module.exports = {
     register,
     login,
     authCheck,
     refreshToken,
+    logout,
 }
