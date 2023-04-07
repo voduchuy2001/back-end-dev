@@ -1,6 +1,8 @@
 import express from "express";
 import authController from "../controllers/authController";
+import productController from "../controllers/productController";
 import authValidation from "../validations/authValidation";
+import productValidation from "../validations/productValidation";
 import { validation } from "../middlewares/validation";
 import { verifyToken, admin } from "../middlewares/verifyToken";
 
@@ -20,6 +22,11 @@ const initAPIRoutes = (app) => {
     router.post('/forgot-password', authValidation.validateForgotPassword(), validation, authController.forgotPassword)
     router.put('/reset-password/:token', authValidation.validateResetPassword(), validation, authController.resetPassword)
 
+    // Product
+    router.post('/create-product', productValidation.validateCreateProduct(), validation, [verifyToken, admin], productController.createProduct);
+    router.put('/update-product/:id', productValidation.validateUpdateProduct(), validation, [verifyToken, admin], productController.updateProduct);
+    router.get('/product-detail/:id', productController.productDetail);
+    router.get('/get-all-products', productController.getAllProduct);
 
     return app.use('/api/v1', router);
 };

@@ -175,7 +175,8 @@ const updatePassword = async (req, res) => {
             })
         } else {
             const hashPassword = await hashPasswordService.hashPassword(req.body.password)
-            await user.updateOne({ password: hashPassword })
+            user.password = hashPassword
+            await user.save()
             return res.status(200).json({
                 msg: "Updated password!"
             })
@@ -196,7 +197,8 @@ const blockUser = async (req, res) => {
                 msg: "Not found user!"
             })
         } else {
-            await user.updateOne({ isBlocked: true })
+            user.isBlocked = true
+            await user.save()
             return res.status(200).json({
                 msg: "Blocked!"
             })
@@ -217,7 +219,8 @@ const unBlockUser = async (req, res) => {
                 msg: "Not found user!"
             })
         } else {
-            await user.updateOne({ isBlocked: false })
+            user.isBlocked = false
+            await user.save()
             return res.status(200).json({
                 msg: "Un blocked!"
             })
@@ -257,7 +260,6 @@ const forgotPassword = async (req, res) => {
                     msg: 'Mailing fail!'
                 })
             } else {
-                console.log(sendingMail)
                 return res.status(200).json({
                     msg: 'A confirmation email has been sent to your email!'
                 })
@@ -271,26 +273,32 @@ const forgotPassword = async (req, res) => {
 }
 
 const resetPassword = async (req, res) => {
-    const { password } = req.body;
-    const { token } = req.params;
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    const user = await User.findOne({
-        passwordResetToken: hashedToken,
-        passwordResetExpired: { $gt: Date.now() },
-    });
-    if (!user) {
-        return res.status(400).json({
-            msg: "Token Expired, Please try again later!"
-        })
-    } else {
-        const hashPassword = await hashPasswordService.hashPassword(password)
-        user.password = hashPassword
-        user.passwordResetToken = null;
-        user.passwordResetExpired = null;
-        await user.save();
-        return res.status(200).json({
-            msg: "Updated password"
+    try {
+        const { password } = req.body;
+        const { token } = req.params;
+        const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+        const user = await User.findOne({
+            passwordResetToken: hashedToken,
+            passwordResetExpired: { $gt: Date.now() },
         });
+        if (!user) {
+            return res.status(400).json({
+                msg: "Token Expired, Please try again later!"
+            })
+        } else {
+            const hashPassword = await hashPasswordService.hashPassword(password)
+            user.password = hashPassword
+            user.passwordResetToken = null;
+            user.passwordResetExpired = null;
+            await user.save();
+            return res.status(200).json({
+                msg: "Updated password"
+            });
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
     }
 }
 
