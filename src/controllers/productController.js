@@ -66,8 +66,16 @@ const productDetail = async (req, res) => {
 
 const getAllProduct = async (req, res) => {
     try {
-        const products = await Product.find();
-        
+        const page = parseInt(req.query.page) - 1 || 0;
+        const limit = parseInt(req.query.limit) || 5;
+        const search = req.query.search || "";
+
+        const products = await Product.find({
+            name: { $regex: search, $options: "i" }
+        })
+            .skip(page * limit)
+            .limit(limit)
+
         if (products.length === 0) {
             return res.status(400).json({
                 msg: "Not found!"

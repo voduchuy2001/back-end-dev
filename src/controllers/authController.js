@@ -247,7 +247,7 @@ const forgotPassword = async (req, res) => {
                 passwordResetExpired: Date.now() + 15 * 60 * 1000
             });
             const emailTemplate = `You are receiving this email because we received a password reset request for your account.This password reset link will expire in 15 minutes. 
-            <a href=${process.env.URL_SERVER}/api/reset-password/${resetToken}>Click here</a>`
+            <a href=${process.env.URL_SERVER}/api/v1/reset-password/${resetToken}>Click here</a>`
 
             const data = {
                 email: user.email,
