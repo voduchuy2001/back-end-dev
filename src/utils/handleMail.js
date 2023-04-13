@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer')
 
-const sendMail = async ({ email, html }) => {
-    let transporter = nodemailer.createTransport({
+const sendMail = async ({ email, html, subject }) => {
+    const transporter = nodemailer.createTransport({
         host: "smtp.gmail.com",
         port: 587,
         secure: false, // true for 465, false for other ports
@@ -12,10 +12,10 @@ const sendMail = async ({ email, html }) => {
     });
 
     // send mail with defined transport object
-    let info = await transporter.sendMail({
+    const info = await transporter.sendMail({
         from: '"VClothing" <no-relply@vclothing.com>', // sender address
         to: email, // list of receivers
-        subject: "Forgot password", // Subject line
+        subject: subject, // Subject line
         html: html, // html body
     });
 

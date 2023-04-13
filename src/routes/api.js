@@ -3,8 +3,9 @@ import authController from "../controllers/authController";
 import productController from "../controllers/productController";
 import authValidation from "../validations/authValidation";
 import productValidation from "../validations/productValidation";
-import { validation } from "../middlewares/validation";
-import { verifyToken, admin } from "../middlewares/verifyToken";
+import { validation } from "../middleware/validation";
+import { verifyToken, admin } from "../middleware/verifyToken";
+import upload from "../config/cloudinary"
 
 const router = express.Router();
 
@@ -27,6 +28,7 @@ const initAPIRoutes = (app) => {
     router.put('/update-product/:id', productValidation.validateUpdateProduct(), validation, [verifyToken, admin], productController.updateProduct);
     router.get('/product-detail/:id', productController.productDetail);
     router.get('/get-all-products', productController.getAllProduct);
+    router.post('/upload-img/:id', [verifyToken, admin], upload.array('image'), productController.uploadImg);
 
     return app.use('/api/v1', router);
 };

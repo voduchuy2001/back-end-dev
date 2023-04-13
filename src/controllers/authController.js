@@ -1,6 +1,5 @@
 import User from "../models/user";
-import hashPasswordService from "../services/hashPasswordService";
-import loginService from "../services/loginService";
+import hashPasswordService from "../utils/handleHashPassword";
 import handleJwt from "../utils/handleJwt";
 import handleMail from "../utils/handleMail"
 import bcrypt from "bcrypt";
@@ -47,24 +46,31 @@ const register = async (req, res) => {
 
 const login = async (req, res) => {
     try {
-        const user = await loginService.handleLogin(req.body.email, req.body.password)
+        const user = await User.findOne({ email: req.body.email })
 
         if (!user) {
             return res.status(400).json({
                 msg: 'These credentials do not match our records!'
             })
         } else {
-            const accessToken = handleJwt.generateAccessToken(user.id, user.role, user.isBlocked)
-            const refreshToken = handleJwt.generateRefreshToken(user.id, user.role, user.isBlocked)
-            res.cookie('refreshToken', refreshToken, {
-                httpOnly: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000
-            })
-            return res.status(200).json({
-                accessToken,
-                msg: 'Login successfully!',
-                user: user,
-            })
+            const comparePassword = await bcrypt.compare(req.body.password, user.password)
+            if (!comparePassword) {
+                return res.status(400).json({
+                    msg: 'Password does not match!'
+                })
+            } else {
+                const accessToken = handleJwt.generateAccessToken(user.id, user.role, user.isBlocked)
+                const refreshToken = handleJwt.generateRefreshToken(user.id, user.role, user.isBlocked)
+                res.cookie('refreshToken', refreshToken, {
+                    httpOnly: true,
+                    maxAge: 7 * 24 * 60 * 60 * 1000
+                })
+                return res.status(200).json({
+                    accessToken,
+                    msg: 'Login successfully!',
+                    user: user,
+                })
+            }
         }
     } catch (error) {
         return res.status(500).json({
@@ -250,6 +256,7 @@ const forgotPassword = async (req, res) => {
             <a href=${process.env.URL_SERVER}/api/v1/reset-password/${resetToken}>Click here</a>`
 
             const data = {
+                subject: "Forgot Password",
                 email: user.email,
                 html: emailTemplate,
             }
