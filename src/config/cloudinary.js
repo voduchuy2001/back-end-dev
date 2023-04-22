@@ -11,7 +11,7 @@ cloudinary.config({
 });
 
 const storage = new CloudinaryStorage({
-    cloudinary,
+    cloudinary: cloudinary,
 });
 
 const fileFilter = (req, file, cb) => {

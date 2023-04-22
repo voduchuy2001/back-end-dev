@@ -28,7 +28,8 @@ const initAPIRoutes = (app) => {
     router.put('/update-product/:id', productValidation.validateUpdateProduct(), validation, [verifyToken, admin], productController.updateProduct);
     router.get('/product-detail/:id', productController.productDetail);
     router.get('/get-all-products', productController.getAllProduct);
-    router.post('/upload-img/:id', [verifyToken, admin], upload.array('image'), productController.uploadImg);
+    router.post('/upload-img/:id', [verifyToken, admin], upload.array('images'), productController.uploadImg);
+    router.delete('/delete-img/:id/:imageId', [verifyToken, admin], productController.deleteImg);
 
     return app.use('/api/v1', router);
 };

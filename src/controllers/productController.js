@@ -1,4 +1,5 @@
 import Product from "../models/product";
+const cloudinary = require('cloudinary').v2;
 
 const createProduct = async (req, res) => {
     try {
@@ -96,25 +97,61 @@ const getAllProduct = async (req, res) => {
 const uploadImg = async (req, res) => {
     try {
         const id = req.params.id
-        const files = req.files
         const product = await Product.findOne({ _id: id })
         if (!product) {
             return res.status(400).json({
                 msg: "Not found product!"
             })
         } else {
+            const files = req.files
+            const images = [];
             for (const file of files) {
-                await Product.findByIdAndUpdate(
-                    { _id: id },
-                    { $push: { "images": { url: file.path, publicId: file.filename } } },
-                    { new: true }
-                )
+                images.push({
+                    publicId: file.filename,
+                    url: file.path
+                })
             }
 
+            product.images.push(...images);
+            await product.save();
+
             return res.status(200).json({
-                msg: "Upload success!"
+                msg: "Upload success!",
+                product: product
             })
         }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
+const deleteImg = async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(400).json({
+                msg: 'Product not found'
+            });
+        } else {
+            const image = product.images.find(image => image.publicId === req.params.imageId);
+            if (!image) {
+                return res.status(404).json({
+                    msg: 'Image not found!'
+                });
+            } else {
+                await cloudinary.uploader.destroy(req.params.imageId);
+                product.images = product.images.filter(image => image.publicId !== req.params.imageId);
+                await product.save();
+
+                return res.status(200).json({
+                    msg: "Delete success!",
+                    product: product
+                })
+            }
+        }
+
     } catch (error) {
         return res.status(500).json({
             msg: '500 Server ' + error
@@ -128,4 +165,5 @@ module.exports = {
     productDetail,
     getAllProduct,
     uploadImg,
+    deleteImg,
 }

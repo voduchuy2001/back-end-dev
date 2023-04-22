@@ -28,12 +28,10 @@ var productSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
-        images: [
-            {
-                publicId: String,
-                url: String,
-            },
-        ],
+        images: [{
+            url: String,
+            publicId: String,
+        }],
         color: [],
         tags: String,
         ratings: [
