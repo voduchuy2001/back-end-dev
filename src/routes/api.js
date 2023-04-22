@@ -27,9 +27,10 @@ const initAPIRoutes = (app) => {
     router.post('/create-product', productValidation.validateCreateProduct(), validation, [verifyToken, admin], productController.createProduct);
     router.put('/update-product/:id', productValidation.validateUpdateProduct(), validation, [verifyToken, admin], productController.updateProduct);
     router.get('/product-detail/:id', productController.productDetail);
-    router.get('/get-all-products', productController.getAllProduct);
+    router.get('/get-all-products', productController.getAllProducts);
     router.post('/upload-img/:id', [verifyToken, admin], upload.array('images'), productController.uploadImg);
     router.delete('/delete-img/:id/:imageId', [verifyToken, admin], productController.deleteImg);
+    router.delete('/delete-product/:id', [verifyToken, admin], productController.deleteProduct);
 
     return app.use('/api/v1', router);
 };

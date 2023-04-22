@@ -3,7 +3,16 @@ const cloudinary = require('cloudinary').v2;
 
 const createProduct = async (req, res) => {
     try {
-        const product = await Product.create(req.body)
+        const product = await Product.create({
+            name: req.body.name,
+            slug: req.body.slug,
+            description: req.body.description,
+            price: req.body.price,
+            category: req.body.category,
+            brand: req.body.brand,
+            quantity: req.body.quantity,
+            color: req.body.color,
+        })
         if (!product) {
             return res.status(400).json({
                 msg: "Fail to create!"
@@ -24,16 +33,24 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const id = req.params._id
-        const product = await Product.findOne({ id: id })
+        const product = await Product.findOneAndUpdate({ id: id }, {
+            name: req.body.name,
+            slug: req.body.slug,
+            description: req.body.description,
+            price: req.body.price,
+            category: req.body.category,
+            brand: req.body.brand,
+            quantity: req.body.quantity,
+            color: req.body.color,
+        }, { new: true })
         if (!product) {
             return res.status(400).json({
                 msg: "Not found!"
             })
         } else {
-            const updateProduct = await product.save(req.body)
             return res.status(200).json({
                 msg: "Updated",
-                product: updateProduct,
+                product: product,
             })
         }
     } catch (error) {
@@ -65,7 +82,7 @@ const productDetail = async (req, res) => {
     }
 }
 
-const getAllProduct = async (req, res) => {
+const getAllProducts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) - 1 || 0;
         const limit = parseInt(req.query.limit) || 5;
@@ -85,6 +102,31 @@ const getAllProduct = async (req, res) => {
             return res.status(200).json({
                 msg: "Product",
                 product: products
+            })
+        }
+    } catch (error) {
+        return res.status(500).json({
+            msg: '500 Server ' + error
+        })
+    }
+}
+
+const deleteProduct = async (req, res) => {
+    try {
+        const product = await Product.findOne({_id: req.params.id})
+
+        if (!product) {
+            return res.status(400).json({
+                msg: "Not found!"
+            })
+        } else {
+            const images = product.images
+            for (const image of images) {
+                await cloudinary.uploader.destroy(image.publicId)
+            }
+            await product.deleteOne({_id: req.params.id});
+            return res.status(200).json({
+                msg: 'Deleted!'
             })
         }
     } catch (error) {
@@ -163,7 +205,8 @@ module.exports = {
     createProduct,
     updateProduct,
     productDetail,
-    getAllProduct,
+    getAllProducts,
     uploadImg,
     deleteImg,
+    deleteProduct,
 }
