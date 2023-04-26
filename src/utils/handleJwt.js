@@ -1,21 +1,21 @@
 import jwt from "jsonwebtoken";
 
-const generateAccessToken = (userId, role, isBlocked) => {
+const generateAccessToken = (userId, role, blocked) => {
     return jwt.sign({
         id: userId,
         role: role,
-        isBlocked: isBlocked
+        blocked: blocked
     },
         process.env.ACCESS_TOKEN,
         { expiresIn: '3d' },
     )
 }
 
-const generateRefreshToken = (userId, role, isBlocked) => {
+const generateRefreshToken = (userId, role, blocked) => {
     return jwt.sign({
         id: userId,
         role: role,
-        isBlocked: isBlocked
+        blocked: blocked
     },
         process.env.REFRESH_TOKEN,
         { expiresIn: '7d' },

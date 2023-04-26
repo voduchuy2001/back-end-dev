@@ -9,8 +9,10 @@ const router = express.Router();
 const initAPIRoutes = (app) => {
     // Auth
     router.post('/register', authController.register);
+    router.post('/activate', authController.verifyUser);
+    router.post('/re-activate', authController.reVerifyUser);
     router.post('/login', authController.login);
-    router.get('/auth-check', verifyToken, authController.authCheck);
+    router.get('/auth-check', verifyToken, authController.auth);
     router.get('/get-users', [verifyToken, admin], authController.getUsers);
     router.post('/refresh-token', authController.refreshToken);
     router.post('/logout', authController.logout)

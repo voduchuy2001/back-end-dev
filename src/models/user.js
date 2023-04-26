@@ -31,12 +31,12 @@ var userSchema = new mongoose.Schema(
             type: Boolean,
             default: false,
         },
-        refreshToken: {
-            type: String,
-        },
         address: {
             type: String,
         },
+        verifiedAt: Date,
+        verifyToken: String,
+        verifyTokenExpired: Date,
         passwordChangedAt: Date,
         passwordResetToken: String,
         passwordResetExpired: Date,
