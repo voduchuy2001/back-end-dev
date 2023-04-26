@@ -5,33 +5,24 @@ import handleMail from "../utils/handleMail"
 import bcrypt from "bcrypt";
 const crypto = require('crypto')
 import jwt from "jsonwebtoken";
+const { paginateSearch } = require('../utils/handlePaginate');
 
 const register = async (req, res) => {
     try {
         const email = req.body.email
-        const mobile = req.body.mobile
         const findUserByEmail = await User.findOne({ email: email })
 
         if (!findUserByEmail) {
-            const findUserByMobile = await User.findOne({ mobile: mobile })
-            if (findUserByMobile) {
-                return res.status(400).json({
-                    msg: 'Phone number already in use!'
-                });
-            } else {
-                const hashPassword = await hashPasswordService.hashPassword(req.body.password)
-                await User.create({
-                    email: req.body.email,
-                    firstName: req.body.firstName,
-                    lastName: req.body.lastName,
-                    email: req.body.email,
-                    password: hashPassword,
-                    mobile: req.body.mobile
-                })
-                return res.status(200).json({
-                    msg: 'Register success!',
-                });
-            }
+            const hashPassword = await hashPasswordService.hashPassword(req.body.password)
+            await User.create({
+                firstName: req.body.firstName,
+                lastName: req.body.lastName,
+                email: req.body.email,
+                password: hashPassword,
+            })
+            return res.status(200).json({
+                msg: 'Register success!',
+            });
         } else {
             return res.status(400).json({
                 msg: 'E-mail already in use!'
@@ -150,16 +141,20 @@ const logout = async (req, res) => {
     }
 }
 
-const getAllUser = async (req, res) => {
+const getUsers = async (req, res) => {
     try {
-        const users = await User.find()
-        if (users.length === 0) {
+        const searchText = req.query.search
+        const page = req.query.page || 1
+        const limit = req.query.limit || 10
+
+        const users = await paginateSearch(User, searchText, { page: page, limit: limit });
+        if (!users) {
             return res.status(400).json({
-                msg: "Do not have user!"
+                msg: 'No users found!'
             })
         } else {
             return res.status(200).json({
-                msg: "List of User",
+                msg: 'Users list!',
                 users: users
             })
         }
@@ -203,7 +198,7 @@ const blockUser = async (req, res) => {
                 msg: "Not found user!"
             })
         } else {
-            user.isBlocked = true
+            user.blocked = true
             await user.save()
             return res.status(200).json({
                 msg: "Blocked!"
@@ -225,7 +220,7 @@ const unBlockUser = async (req, res) => {
                 msg: "Not found user!"
             })
         } else {
-            user.isBlocked = false
+            user.blocked = false
             await user.save()
             return res.status(200).json({
                 msg: "Un blocked!"
@@ -313,7 +308,7 @@ module.exports = {
     register,
     login,
     authCheck,
-    getAllUser,
+    getUsers,
     refreshToken,
     logout,
     updatePassword,

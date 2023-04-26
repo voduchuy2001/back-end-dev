@@ -1,9 +1,6 @@
 import express from "express";
 import authController from "../controllers/authController";
 import productController from "../controllers/productController";
-import authValidation from "../validations/authValidation";
-import productValidation from "../validations/productValidation";
-import { validation } from "../middleware/validation";
 import { verifyToken, admin } from "../middleware/verifyToken";
 import upload from "../config/cloudinary"
 
@@ -11,25 +8,25 @@ const router = express.Router();
 
 const initAPIRoutes = (app) => {
     // Auth
-    router.post('/register', authValidation.validateRegister(), validation, authController.register);
-    router.post('/login', authValidation.validateLogin(), validation, authController.login);
+    router.post('/register', authController.register);
+    router.post('/login', authController.login);
     router.get('/auth-check', verifyToken, authController.authCheck);
-    router.get('/get-all-users', [verifyToken, admin], authController.getAllUser);
+    router.get('/get-users', [verifyToken, admin], authController.getUsers);
     router.post('/refresh-token', authController.refreshToken);
     router.post('/logout', authController.logout)
-    router.post('/update-password', authValidation.validateUpdatePassword(), validation, [verifyToken], authController.updatePassword)
+    router.post('/update-password',  [verifyToken], authController.updatePassword)
     router.put('/block-user/:id', [verifyToken, admin], authController.blockUser);
     router.put('/un-block-user/:id', [verifyToken, admin], authController.unBlockUser);
-    router.post('/forgot-password', authValidation.validateForgotPassword(), validation, authController.forgotPassword)
-    router.put('/reset-password/:token', authValidation.validateResetPassword(), validation, authController.resetPassword)
+    router.post('/forgot-password', authController.forgotPassword)
+    router.put('/reset-password/:token', authController.resetPassword)
 
     // Product
-    router.post('/create-product', productValidation.validateCreateProduct(), validation, [verifyToken, admin], productController.createProduct);
-    router.put('/update-product/:id', productValidation.validateUpdateProduct(), validation, [verifyToken, admin], productController.updateProduct);
+    router.post('/create-product', [verifyToken, admin], productController.createProduct);
+    router.put('/update-product/:id',  [verifyToken, admin], productController.updateProduct);
     router.get('/product-detail/:id', productController.productDetail);
-    router.get('/get-all-products', productController.getAllProducts);
-    router.post('/upload-img/:id', [verifyToken, admin], upload.array('images'), productController.uploadImg);
-    router.delete('/delete-img/:id/:imageId', [verifyToken, admin], productController.deleteImg);
+    router.get('/get-products', productController.getProducts);
+    router.post('/upload-img/:id', [verifyToken, admin], upload.array('images'), productController.uploadProductImg);
+    router.delete('/delete-img/:id/:imageId', [verifyToken, admin], productController.uploadProductImg);
     router.delete('/delete-product/:id', [verifyToken, admin], productController.deleteProduct);
 
     return app.use('/api/v1', router);

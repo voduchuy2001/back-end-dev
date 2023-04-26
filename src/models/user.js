@@ -5,39 +5,36 @@ var userSchema = new mongoose.Schema(
     {
         firstName: {
             type: String,
+            required: true,
         },
         lastName: {
             type: String,
+            required: true,
         },
         email: {
             type: String,
+            required: true,
         },
         mobile: {
             type: String,
         },
         password: {
             type: String,
+            required: true,
+            minLength: 6,
         },
         role: {
             type: String,
             default: "user",
         },
-        isBlocked: {
+        blocked: {
             type: Boolean,
             default: false,
         },
-        cart: {
-            type: Array,
-            default: [],
-        },
-        wishlist: [{ type: mongoose.Schema.Types.ObjectId, ref: "Product" }],
         refreshToken: {
             type: String,
         },
         address: {
-            type: String,
-        },
-        refreshToken: {
             type: String,
         },
         passwordChangedAt: Date,

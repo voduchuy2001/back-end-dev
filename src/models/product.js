@@ -5,44 +5,60 @@ var productSchema = new mongoose.Schema(
     {
         name: {
             type: String,
-        },
-        slug: {
-            type: String,
+            required: true,
         },
         description: {
             type: String,
-        },
-        price: {
-            type: Number,
+            required: true,
         },
         category: {
             type: String,
+            required: true,
         },
-        brand: {
+        tags: {
             type: String,
         },
-        quantity: {
+        originalPrice: {
             type: Number,
+            required: true,
         },
-        sold: {
+        discountPrice: {
             type: Number,
-            default: 0,
+            required: true,
+        },
+        stock: {
+            type: Number,
+            required: true,
         },
         images: [{
             url: String,
             publicId: String,
         }],
-        color: [],
-        tags: String,
-        ratings: [
+        reviews: [
             {
-                star: Number,
-                comment: String,
-                postedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+                user: {
+                    type: Object,
+                },
+                rating: {
+                    type: Number,
+                },
+                comment: {
+                    type: String,
+                },
+                productId: {
+                    type: String,
+                },
+                createdAt: {
+                    type: Date,
+                    default: Date.now(),
+                }
             },
         ],
-        totalRating: {
-            type: String,
+        ratings: {
+            type: Number,
+        },
+        soldOut: {
+            type: Number,
             default: 0,
         },
     },

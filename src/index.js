@@ -11,13 +11,16 @@ database();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(cors())
+app.use(cors({
+    origin: "http://localhost:3000",
+    credentials: true,
+}))
 
 const port = process.env.PORT || 6969;
 
 initAPIRoutes(app);
 app.use((req, res) => {
-    return res.status(404).json({msg: '404'});
+    return res.status(404).json({ msg: '404' });
 });
 
 

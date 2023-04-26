@@ -3,16 +3,7 @@ const cloudinary = require('cloudinary').v2;
 
 const createProduct = async (req, res) => {
     try {
-        const product = await Product.create({
-            name: req.body.name,
-            slug: req.body.slug,
-            description: req.body.description,
-            price: req.body.price,
-            category: req.body.category,
-            brand: req.body.brand,
-            quantity: req.body.quantity,
-            color: req.body.color,
-        })
+        const product = await Product.create(req.body)
         if (!product) {
             return res.status(400).json({
                 msg: "Fail to create!"
@@ -33,16 +24,7 @@ const createProduct = async (req, res) => {
 const updateProduct = async (req, res) => {
     try {
         const id = req.params._id
-        const product = await Product.findOneAndUpdate({ id: id }, {
-            name: req.body.name,
-            slug: req.body.slug,
-            description: req.body.description,
-            price: req.body.price,
-            category: req.body.category,
-            brand: req.body.brand,
-            quantity: req.body.quantity,
-            color: req.body.color,
-        }, { new: true })
+        const product = await Product.findOneAndUpdate({ id: id }, req.body, { new: true })
         if (!product) {
             return res.status(400).json({
                 msg: "Not found!"
@@ -82,7 +64,7 @@ const productDetail = async (req, res) => {
     }
 }
 
-const getAllProducts = async (req, res) => {
+const getProducts = async (req, res) => {
     try {
         const page = parseInt(req.query.page) - 1 || 0;
         const limit = parseInt(req.query.limit) || 5;
@@ -113,7 +95,7 @@ const getAllProducts = async (req, res) => {
 
 const deleteProduct = async (req, res) => {
     try {
-        const product = await Product.findOne({_id: req.params.id})
+        const product = await Product.findOne({ _id: req.params.id })
 
         if (!product) {
             return res.status(400).json({
@@ -124,7 +106,7 @@ const deleteProduct = async (req, res) => {
             for (const image of images) {
                 await cloudinary.uploader.destroy(image.publicId)
             }
-            await product.deleteOne({_id: req.params.id});
+            await product.deleteOne({ _id: req.params.id });
             return res.status(200).json({
                 msg: 'Deleted!'
             })
@@ -136,7 +118,7 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-const uploadImg = async (req, res) => {
+const uploadProductImg = async (req, res) => {
     try {
         const id = req.params.id
         const product = await Product.findOne({ _id: id })
@@ -169,7 +151,7 @@ const uploadImg = async (req, res) => {
     }
 }
 
-const deleteImg = async (req, res) => {
+const deleteProductImg = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -205,8 +187,8 @@ module.exports = {
     createProduct,
     updateProduct,
     productDetail,
-    getAllProducts,
-    uploadImg,
-    deleteImg,
+    getProducts,
+    uploadProductImg,
+    deleteProductImg,
     deleteProduct,
 }
