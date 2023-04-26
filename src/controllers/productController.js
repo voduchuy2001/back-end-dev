@@ -118,11 +118,15 @@ const deleteProduct = async (req, res) => {
     }
 }
 
-const uploadProductImg = async (req, res) => {
+const uploadImg = async (req, res) => {
     try {
         const id = req.params.id
         const product = await Product.findOne({ _id: id })
         if (!product) {
+            const files = req.files
+            for (const file of files) {
+                await cloudinary.uploader.destroy(file.filename);
+            }
             return res.status(400).json({
                 msg: "Not found product!"
             })
@@ -151,7 +155,7 @@ const uploadProductImg = async (req, res) => {
     }
 }
 
-const deleteProductImg = async (req, res) => {
+const deleteImg = async (req, res) => {
     try {
         const product = await Product.findById(req.params.id);
         if (!product) {
@@ -188,7 +192,7 @@ module.exports = {
     updateProduct,
     productDetail,
     getProducts,
-    uploadProductImg,
-    deleteProductImg,
+    uploadImg,
+    deleteImg,
     deleteProduct,
 }
