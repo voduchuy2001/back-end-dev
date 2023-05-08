@@ -9,10 +9,10 @@ const router = express.Router();
 const initAPIRoutes = (app) => {
     // Auth
     router.post('/register', authController.register);
-    router.post('/activate', authController.verifyUser);
-    router.post('/re-activate', authController.reVerifyUser);
+    router.post('/verify', authController.verifyUser);
+    router.post('/re-verify', authController.reVerifyUser);
     router.post('/login', authController.login);
-    router.get('/auth-check', verifyToken, authController.auth);
+    router.get('/auth-user', verifyToken, authController.authUser);
     router.get('/get-users', [verifyToken, admin], authController.getUsers);
     router.post('/refresh-token', authController.refreshToken);
     router.post('/logout', authController.logout)
@@ -25,7 +25,7 @@ const initAPIRoutes = (app) => {
     // Product
     router.post('/create-product', [verifyToken, admin], productController.createProduct);
     router.put('/update-product/:id',  [verifyToken, admin], productController.updateProduct);
-    router.get('/product-detail/:id', productController.productDetail);
+    router.get('/get-product/:id', productController.productDetail);
     router.get('/get-products', productController.getProducts);
     router.post('/upload-img/:id', [verifyToken, admin], upload.array('images'), productController.uploadImg);
     router.delete('/delete-img/:id/:imageId', [verifyToken, admin], productController.deleteImg);

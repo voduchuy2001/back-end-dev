@@ -39,7 +39,7 @@ const admin = (req, res, next) => {
     }
 }
 
-const isBlocked = (req, res, next) => {
+const blocked = (req, res, next) => {
     try {
         const { isBlocked } = req.user
         if (isBlocked !== false) {
@@ -54,8 +54,24 @@ const isBlocked = (req, res, next) => {
     }
 }
 
+const verified = (req, res, next) => {
+    try {
+        const { verifiedAt } = req.user
+        if (verifiedAt !== false) {
+            return res.status(401).json({
+                msg: 'Must be verified!'
+            })
+        } else {
+            next()
+        }
+    } catch (error) {
+        console.log(error)
+    }
+}
+
 module.exports = {
     verifyToken,
     admin,
-    isBlocked,
+    blocked,
+    verified,
 }

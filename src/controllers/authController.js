@@ -5,7 +5,6 @@ import handleMail from "../utils/handleMail";
 import bcrypt from "bcrypt";
 const crypto = require('crypto');
 import jwt from "jsonwebtoken";
-const { paginateSearch } = require('../utils/handlePaginate');
 
 const register = async (req, res) => {
     try {
@@ -78,7 +77,7 @@ const verifyUser = async (req, res) => {
 
             await activeUser.save();
             return res.status(200).json({
-                msg: "User is activated"
+                msg: "User is activated",
             });
         }
     } catch (error) {
@@ -147,8 +146,8 @@ const login = async (req, res) => {
                     msg: 'Password does not match!'
                 })
             } else {
-                const accessToken = handleJwt.generateAccessToken(user.id, user.role, user.blocked)
-                const refreshToken = handleJwt.generateRefreshToken(user.id, user.role, user.blocked)
+                const accessToken = handleJwt.generateAccessToken(user.id, user.role, user.blocked, user.verifiedAt)
+                const refreshToken = handleJwt.generateRefreshToken(user.id, user.role, user.blocked, user.verifiedAt)
                 res.cookie('refreshToken', refreshToken, {
                     httpOnly: true,
                     maxAge: 7 * 24 * 60 * 60 * 1000
@@ -167,7 +166,7 @@ const login = async (req, res) => {
     }
 }
 
-const auth = async (req, res) => {
+const authUser = async (req, res) => {
     try {
         const user = await User.findById(req.user.id)
         if (!user) {
@@ -201,7 +200,7 @@ const refreshToken = async (req, res) => {
                         msg: 'Invalid refresh token!'
                     })
                 } else {
-                    const newAccessToken = handleJwt.generateAccessToken(decode.id, decode.role, decode.blocked)
+                    const newAccessToken = handleJwt.generateAccessToken(decode.id, decode.role, decode.blocked, decode.verifiedAt)
                     return res.status(200).json({
                         accessToken: newAccessToken
                     })
@@ -240,11 +239,16 @@ const logout = async (req, res) => {
 
 const getUsers = async (req, res) => {
     try {
-        const searchText = req.query.search
-        const page = req.query.page || 1
-        const limit = req.query.limit || 10
+        const page = parseInt(req.query.page) - 1 || 0;
+        const limit = parseInt(req.query.limit) || 5;
+        const search = req.query.search || "";
 
-        const users = await paginateSearch(User, searchText, { page: page, limit: limit });
+        const users = await User.find({
+            email: { $regex: search, $options: "i" }
+        })
+            .skip(page * limit)
+            .limit(limit)
+            
         if (!users) {
             return res.status(400).json({
                 msg: 'No users found!'
@@ -406,7 +410,7 @@ module.exports = {
     verifyUser,
     reVerifyUser,
     login,
-    auth,
+    authUser,
     getUsers,
     refreshToken,
     logout,
